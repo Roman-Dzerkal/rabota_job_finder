@@ -1,0 +1,24 @@
+{
+  "firstName": "Roman",
+  "lastName": "Dzerkal",
+  "isAlive": true,
+  "age": 21,
+  "address": {
+    "streetAddress": "Haharina Ave 57",
+    "city": "Dnipro",
+    "state": "DP",
+    "postalCode": "49000"
+  },
+  "phoneNumbers": [
+    {
+      "type": "home",
+      "number": "212 555-1234"
+    },
+    {
+      "type": "office",
+      "number": "+380990050432"
+    }
+  ],
+  "children": [],
+  "spouse": null
+}
