@@ -1,1 +1,2 @@
-# rabota_job_finder
+# Rabota.UA visual job finder
+

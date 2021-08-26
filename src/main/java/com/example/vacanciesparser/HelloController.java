@@ -21,12 +21,14 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class HelloController {
     @FXML private TextField keyWordsLabel;
-    private List<Integer> idList;
-    private final Logger LOG = Logger.getLogger(HelloController.class);
+    private List<Integer> idList = null;
+    private static final Logger LOG = Logger.getLogger(HelloController.class);
+    private List<String> clustersIDs;
 
     @FXML protected void onHelloButtonClick() throws URISyntaxException, IOException {
         String json;
@@ -40,7 +42,7 @@ public class HelloController {
             getVacancyIds(json);
         }
 
-        if (idList.size() != 0) {
+        if (!this.idList.isEmpty()) {
             for (Integer currentId : idList) {
                 parseIdVacancy(currentId);
             }
@@ -72,6 +74,8 @@ public class HelloController {
     }
     
     private void parseIdVacancy(Integer id) throws IOException, URISyntaxException {
+        clustersIDs = new ArrayList<>();
+
         URL SERVER = new URL(API.SERVER + "vacancy?id=" + id);
         HttpGet post = new HttpGet(SERVER.toURI());
         HttpClient httpClient = HttpClients.createMinimal();
@@ -79,10 +83,15 @@ public class HelloController {
         HttpEntity httpEntity = httpResponse.getEntity();
         String vacancyDescription = EntityUtils.toString(httpEntity);
         JSONObject jo = new JSONObject(vacancyDescription);
-        JSONArray ja = jo.optJSONArray("clusters");
-        for (var t : ja) {
-            LOG.info(t + "\n\n");
+        JSONArray clusters = jo.optJSONArray("clusters");
+        JSONObject clustersID;
+        for (int i = 0; i < clusters.length(); i++) {
+            clustersID = clusters.getJSONObject(i);
+            clustersIDs.add(clustersID.getString("name"));
         }
+        Collections.sort(clustersIDs);
+
+        System.out.println(clustersIDs);
 
     }
 
