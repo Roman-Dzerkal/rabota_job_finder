@@ -21,29 +21,28 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class HelloController {
+public class Vacancy {
     @FXML private TextField keyWordsLabel;
-    private List<Integer> idList = null;
-    private static final Logger LOG = Logger.getLogger(HelloController.class);
-    private List<String> clustersIDs;
+
+    private List<Integer> idsList;
+    private static final Logger LOG = Logger.getLogger(Vacancy.class);
 
     @FXML protected void onHelloButtonClick() throws URISyntaxException, IOException {
-        String json;
         if (keyWordsLabel.getText().equals("")){
             Alert alertError = new Alert(Alert.AlertType.ERROR);
             alertError.setHeaderText("Please, type something in text field");
             alertError.showAndWait();
         } else {
-            json = findJobs(keyWordsLabel.getText());
-            //LOG.info(json);
-            getVacancyIds(json);
+            String jsonAnswer = getVacancies(keyWordsLabel.getText());
+            idsList = getIdVacancies(jsonAnswer);
+            int amountVacancies = idsList.size();
+            LOG.info("Found " + amountVacancies + " vacancies");
         }
 
-        if (!this.idList.isEmpty()) {
-            for (Integer currentId : idList) {
+        if (!idsList.isEmpty()) {
+            for (int currentId : idsList) {
                 parseIdVacancy(currentId);
             }
         }
@@ -52,11 +51,18 @@ public class HelloController {
     @FXML void initialize() {
     }
 
-    private String findJobs(String keyWord) throws URISyntaxException, IOException {
-        URL SERVER = new URL(API.SERVER + "vacancy/search");
+    /**
+     * Get all vacancies by entered keywords
+     * @param vacancyName name of the vacancy
+     * @return JSON string with all vacancies
+     * @throws URISyntaxException is URL correct
+     * @throws IOException is data returned
+     */
+    private String getVacancies(String vacancyName) throws URISyntaxException, IOException {
+        URL SERVER = new URL(Config.HTTPS_API_RABOTA_UA + "vacancy/search");
         HttpPost post = new HttpPost(SERVER.toURI());
         List<NameValuePair> nvps = new ArrayList<>();
-        nvps.add(new BasicNameValuePair("keyWords", keyWord));
+        nvps.add(new BasicNameValuePair("keyWords", vacancyName));
         post.setEntity(new UrlEncodedFormEntity(nvps));
         HttpClient httpClient = HttpClients.createMinimal();
         HttpResponse httpResponse = httpClient.execute(post);
@@ -64,35 +70,34 @@ public class HelloController {
         return EntityUtils.toString(httpEntity);
     }
 
-    private void getVacancyIds(String json)  {
-        idList = new ArrayList<>();
-        JSONObject obj = new JSONObject(json);
-        JSONArray ja = obj.getJSONArray("documents");
-        for (int t = 0 ; t < ja.length(); t++) {
-            idList.add(ja.getJSONObject(t).getInt("id"));
+    /**
+     * Get all ids of the vacancies
+     * @param jsonAnswer json string returned after post query
+     * @return list of IDs of the vacancies
+     */
+    private List<Integer> getIdVacancies(String jsonAnswer)  {
+        idsList = new ArrayList<>();
+        JSONObject jsonObject = new JSONObject(jsonAnswer);
+        JSONArray documents = jsonObject.getJSONArray("documents");
+        for (int i = 0 ; i < documents.length(); i++) {
+            idsList.add(documents.getJSONObject(i).getInt("id"));
         }
+        return idsList;
     }
-    
-    private void parseIdVacancy(Integer id) throws IOException, URISyntaxException {
-        clustersIDs = new ArrayList<>();
 
-        URL SERVER = new URL(API.SERVER + "vacancy?id=" + id);
+    /**
+     * Parse information in current ID
+     * @param id current ID
+     * @throws IOException is data returned
+     * @throws URISyntaxException is URL correct
+     */
+    private void parseIdVacancy(Integer id) throws IOException, URISyntaxException {
+        URL SERVER = new URL(Config.HTTPS_API_RABOTA_UA + "vacancy?id=" + id);
         HttpGet post = new HttpGet(SERVER.toURI());
         HttpClient httpClient = HttpClients.createMinimal();
         HttpResponse httpResponse = httpClient.execute(post);
         HttpEntity httpEntity = httpResponse.getEntity();
         String vacancyDescription = EntityUtils.toString(httpEntity);
-        JSONObject jo = new JSONObject(vacancyDescription);
-        JSONArray clusters = jo.optJSONArray("clusters");
-        JSONObject clustersID;
-        for (int i = 0; i < clusters.length(); i++) {
-            clustersID = clusters.getJSONObject(i);
-            clustersIDs.add(clustersID.getString("name"));
-        }
-        Collections.sort(clustersIDs);
-
-        System.out.println(clustersIDs);
-
+        LOG.info(vacancyDescription + "\n\n");
     }
-
 }
