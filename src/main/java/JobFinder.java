@@ -11,6 +11,7 @@ public class JobFinder extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(JobFinder.class.getResource("hello-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         stage.setTitle("Job finder");
+        stage.setMaximized(true);
         stage.setScene(scene);
         stage.show();
     }
