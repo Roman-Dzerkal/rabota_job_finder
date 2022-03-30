@@ -15,6 +15,7 @@ public class JobFinder extends Application {
         stage.setTitle("Job finder");
         stage.setMaximized(true);
         stage.setScene(scene);
+        // ggg
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
